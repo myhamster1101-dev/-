@@ -79,7 +79,7 @@ async def setup(ctx):
         color=0x2f3136
     )
     # ใส่รูปภาพตกแต่ง (เปลี่ยน URL รูปได้ตามใจชอบ)
-    embed.set_image(url="https://auto.creavite.co/api/out/1Nt54ky9V3Yetcqd58_standard.webm") 
+    embed.set_image(url="https://auto.creavite.co/api/out/1Nt54ky9V3Yetcqd58_static.png") 
     embed.set_footer(text="Created by p.hxmster | 30/03/2026")
     
     await ctx.send(embed=embed, view=RegisterView())
