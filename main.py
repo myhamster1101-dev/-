@@ -86,7 +86,7 @@ async def setup(ctx):
     )
     # --- แก้ไขลิงก์รูปตรงนี้ ---
     # ถ้ายังไม่มีรูป ให้ใช้ลิงก์ภาพเมืองสวยๆ จากอินเทอร์เน็ตมาใส่แทนครับ
-    embed.set_image(url="https://i.imgur.com/rN975W6.png") 
+    embed.set_image(url="https://auto.creavite.co/api/out/1Nt54ky9V3Yetcqd58_static.png") 
     embed.set_footer(text="Created by p.hxmster | 30/03/2026")
     
     await ctx.send(embed=embed, view=RegisterView())
