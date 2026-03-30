@@ -22,11 +22,11 @@ cursor.execute('''
 ''')
 db.commit()
 
-# --- Variables ---
+# --- Variables จาก Railway ---
 TOKEN = os.getenv('TOKEN')
 REG_LOG_CHANNEL_ID = int(os.getenv('REG_LOG_CHANNEL_ID')) if os.getenv('REG_LOG_CHANNEL_ID') else None
 
-# --- Modal หน้าต่างกรอกข้อมูล ---
+# --- หน้าต่างกรอกข้อมูล (Modal) ---
 class RegisterModal(discord.ui.Modal, title='📝 ลงทะเบียนเข้าเมือง FiveM'):
     ic_name = discord.ui.TextInput(label='ชื่อ-นามสกุล ใน IC', placeholder='เช่น: Somchai Sakuldee', min_length=3)
     ic_age = discord.ui.TextInput(label='อายุใน IC', placeholder='เช่น: 25', min_length=1, max_length=2)
@@ -42,44 +42,51 @@ class RegisterModal(discord.ui.Modal, title='📝 ลงทะเบียนเ
                            (str(interaction.user.id), self.ic_name.value, int(self.ic_age.value), int(self.ic_height.value), self.steam_url.value, now))
             db.commit()
 
+            # --- ส่งข้อมูลไปยังห้องแจ้งข้อมูล (REG_LOG_CHANNEL_ID) ---
             log_ch = bot.get_channel(REG_LOG_CHANNEL_ID)
             if log_ch:
-                embed = discord.Embed(title="🆕 มีสมาชิกลงทะเบียนใหม่!", color=0x00ff00)
-                embed.add_field(name="ชื่อ IC", value=f"```\n{self.ic_name.value}\n```", inline=False)
-                embed.add_field(name="ข้อมูล", value=f"อายุ: {self.ic_age.value} | สูง: {self.ic_height.value}", inline=True)
-                embed.add_field(name="Steam", value=f"[คลิกดูโปรไฟล์]({self.steam_url.value})", inline=True)
-                embed.set_footer(text=f"By p.hxmster | {now}")
+                embed = discord.Embed(title="🆕 พบสมาชิกลงทะเบียนใหม่!", color=0x3498db, timestamp=datetime.now())
+                embed.add_field(name="👤 ผู้ลงทะเบียน", value=f"{interaction.user.mention} (ID: {interaction.user.id})", inline=False)
+                embed.add_field(name="🏷️ ชื่อในเมือง (IC)", value=f"```\n{self.ic_name.value}\n```", inline=False)
+                embed.add_field(name="🎂 อายุใน IC", value=f"{self.ic_age.value} ปี", inline=True)
+                embed.add_field(name="📏 ส่วนสูง", value=f"{self.ic_height.value} ซม.", inline=True)
+                embed.add_field(name="🔗 Steam Profile", value=f"[คลิกเปิดโปรไฟล์]({self.steam_url.value})", inline=False)
+                embed.set_thumbnail(url=interaction.user.display_avatar.url)
+                embed.set_footer(text=f"System by p.hxmster | {now}")
                 await log_ch.send(embed=embed)
 
-            await interaction.response.send_message("✅ ลงทะเบียนสำเร็จ! ข้อมูลถูกส่งให้แอดมินแล้ว", ephemeral=True)
-        except:
-            await interaction.response.send_message("❌ กรอกข้อมูลผิดพลาด (อายุ/ส่วนสูง ต้องเป็นตัวเลข)", ephemeral=True)
+            await interaction.response.send_message("✅ ลงทะเบียนสำเร็จ! ข้อมูลถูกส่งให้แอดมินตรวจสอบแล้วครับ", ephemeral=True)
+        except Exception as e:
+            print(f"Error: {e}")
+            await interaction.response.send_message("❌ เกิดข้อผิดพลาด กรุณากรอกอายุและส่วนสูงเป็นตัวเลขเท่านั้น", ephemeral=True)
 
-# --- สร้าง View ที่มีปุ่มกด ---
+# --- ระบบปุ่มกดถาวร ---
 class RegisterView(discord.ui.View):
     def __init__(self):
-        super().__init__(timeout=None) # timeout=None ทำให้ปุ่มไม่หมดอายุ
+        super().__init__(timeout=None)
 
-    @discord.ui.button(label='📝 ลงทะเบียนเข้าเมือง', style=discord.ButtonStyle.success, custom_id='reg_btn')
+    @discord.ui.button(label='📝 คลิกที่นี่เพื่อลงทะเบียน', style=discord.ButtonStyle.success, custom_id='reg_btn_v2')
     async def register_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(RegisterModal())
 
 @bot.event
 async def on_ready():
-    bot.add_view(RegisterView()) # ทำให้ปุ่มทำงานได้แม้บอทรีสตาร์ท
-    print(f'✅ บอทปุ่มกด FiveM พร้อมใช้งาน! | p.hxmster')
+    bot.add_view(RegisterView())
+    print(f'✅ FiveM Register Bot Online!')
+    print(f'👤 Created by p.hxmster | 30/03/2026')
 
-# --- คำสั่งสร้างปุ่ม (พิมพ์แค่ครั้งเดียวตอนเริ่ม) ---
+# --- คำสั่งสร้างปุ่ม (!setup) ---
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def setup(ctx):
     embed = discord.Embed(
-        title="🏢 ระบบลงทะเบียนประชากร FiveM",
-        description="กรุณากดปุ่มด้านล่างเพื่อทำการลงทะเบียนเข้าเมือง\nข้อมูลจะถูกส่งให้ทีมงานตรวจสอบโดยตรง",
-        color=0x2f3136
+        title="🌟 ระบบลงทะเบียนประชากร FiveM 🌟",
+        description="ยินดีต้อนรับสู่เมืองของเรา! กรุณากดปุ่มด้านล่างเพื่อกรอกข้อมูลลงทะเบียน\n\n**กรุณาเตรียมข้อมูลดังนี้:**\n1. ชื่อ-นามสกุล (IC)\n2. อายุ และ ส่วนสูง\n3. ลิงก์ Steam Profile ของคุณ",
+        color=0xf1c40f
     )
-    # ใส่รูปภาพตกแต่ง (เปลี่ยน URL รูปได้ตามใจชอบ)
-    embed.set_image(url="https://auto.creavite.co/api/out/1Nt54ky9V3Yetcqd58_static.png") 
+    # --- แก้ไขลิงก์รูปตรงนี้ ---
+    # ถ้ายังไม่มีรูป ให้ใช้ลิงก์ภาพเมืองสวยๆ จากอินเทอร์เน็ตมาใส่แทนครับ
+    embed.set_image(url="https://i.imgur.com/rN975W6.png") 
     embed.set_footer(text="Created by p.hxmster | 30/03/2026")
     
     await ctx.send(embed=embed, view=RegisterView())
